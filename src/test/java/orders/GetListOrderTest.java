@@ -1,23 +1,20 @@
 package orders;
 
 import basic.BasicUrl;
-import io.restassured.response.Response;
 import org.junit.Test;
+import io.qameta.allure.Description;
+import io.qameta.allure.junit4.DisplayName;
 
-import static constant.AdressAndPens.createOrder;
-import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 public class GetListOrderTest extends BasicUrl {
 
+    @DisplayName("Получение непустого списка заказов")
+    @Description("Get-запрос /api/v1/orders")
     @Test
-    public void GetListOrderCheck(){
-        Response response =
-                given()
-                        .header("Content-type", "application/json")
-                        .when()
-                        .get(createOrder);
-        response.then().assertThat().body(notNullValue())
-                .statusCode(200);
+    public void ListOrderTest(){
+        BasicGetApi().then().assertThat().statusCode(SC_OK)
+                .body(notNullValue());
     }
 }

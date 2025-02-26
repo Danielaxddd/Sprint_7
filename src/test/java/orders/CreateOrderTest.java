@@ -1,13 +1,14 @@
 package orders;
 
 import basic.BasicUrl;
-import io.restassured.response.Response;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import io.qameta.allure.Description;
+import io.qameta.allure.junit4.DisplayName;
 
-import static io.restassured.RestAssured.given;
-import static constant.AdressAndPens.createOrder;
+import static constant.AdressAndPens.CREATE_ORDER;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
     @RunWith(Parameterized.class)
@@ -18,8 +19,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
         private final String address;
         private final String stationMetro;
         private final String phoneNumber;
-        private int  rentTime = 1;
-        private String  deliveryDate = "2025-02-28";
+        private int rentTime = 1;
+        private String deliveryDate = "2025-02-28";
         private String color;
 
         public CreateOrderTest(String name, String surname, String address, String stationMetro, String phoneNumber, int rentTime, String deliveryDate, String color) {
@@ -33,6 +34,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
             this.color = color;
 
         }
+
         @Parameterized.Parameters
         public static Object[][] setFormData() {
             return new Object[][]{
@@ -43,19 +45,12 @@ import static org.hamcrest.CoreMatchers.notNullValue;
             };
         }
 
-        // Тест проверяет что можно указать один из цветов — BLACK или GREY;
-//можно указать оба цвета;
-//можно совсем не указывать цвет;
-//тело ответа содержит track.
+        @DisplayName("Успешное создание заказа")
+        @Description("Post-запрос /api/v1/orders")
         @Test
-        public void CreateOrderCheckWithColor(){
-            Response response =
-                    given()
-                            .header("Content-type", "application/json")
-                            .body(setFormData())
-                            .when()
-                            .post(createOrder);
-            response.then().assertThat().body("track", notNullValue())
-                    .statusCode(201);
+        public void aCreateOrderWithColorTest() {
+            String track = BasicPostApi(setFormData(), CREATE_ORDER).then().assertThat().statusCode(201)
+                    .body("track", notNullValue()).and().extract().path("track").toString();
+            BasicPutApi(track).then().assertThat().statusCode(SC_OK);
         }
     }

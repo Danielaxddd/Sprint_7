@@ -1,40 +1,59 @@
 package courier;
 
 import basic.BasicUrl;
-import io.restassured.response.Response;
+import constant.CreateCourier;
 import org.junit.Test;
-
-import java.io.File;
-
-import static constant.AdressAndPens.createCourier;
-import static io.restassured.RestAssured.given;
+import io.qameta.allure.Description;
+import io.qameta.allure.junit4.DisplayName;
+import static constant.AdressAndPens.CREATE_COURIER;
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 
+
 public class ACreateCourierTest extends BasicUrl {
-    //Тест проверяет: 1. Курьера можно создать, 2. Чтобы создать курьера, нужно передать все обяз. поля, 3. Успешный запрос возвращает ok: true.
+
     @Test
-    public void ACreateNewCourierCheck(){
-        File json = new File("src/main/resources/acreateCourier.json");
-        Response response =
-                given()
-                        .header("Content-type", "application/json")
-                        .body(json)
-                        .when()
-                        .post(createCourier);
-        response.then().assertThat().body("ok", equalTo(true))
-                .statusCode(201);
+    @DisplayName("Успешное создание курьера")
+    @Description("Post-запрос /api/v1/courier")
+    public void aCreateNewCourierTest(){
+        CreateCourier createCourier = new CreateCourier("lalalalaal", "1234", "dana");
+        BasicPostApi(createCourier,CREATE_COURIER).then().assertThat().statusCode(SC_CREATED)
+                .body("ok", equalTo(true));
     }
-    // Тест проверяет если нет одного из полей, запрос возращает ошибку, правильный код ответа
+
+    @DisplayName("Создание курьера без необязательного поля(firstName)")
+    @Description("Post-запрос /api/v1/courier")
     @Test
-    public void CourierMistakeWithoutFieldCheck(){
-        File json = new File("src/main/resources/notOneRequiredField.json");
-        Response response =
-                given()
-                        .header("Content-type", "application/json")
-                        .body(json)
-                        .when()
-                        .post(createCourier);
-        response.then().assertThat().statusCode(400);
+    public void courierCreateWithoutNameTest(){
+        CreateCourier createCourier = new CreateCourier("lalalalaall", "1234", "");
+        BasicPostApi(createCourier,CREATE_COURIER).then().assertThat().statusCode(SC_CREATED)
+                .body("ok", equalTo(true));
+    }
+
+    @DisplayName("Создание курьера без обязательного поля(login)")
+    @Description("Post-запрос /api/v1/courier")
+    @Test
+    public void courierCreateWithoutLoginTest(){
+        CreateCourier createCourier = new CreateCourier("",  "1234", "dana");
+        BasicPostApi(createCourier,CREATE_COURIER).then().assertThat().statusCode(SC_BAD_REQUEST)
+        .body("message", equalTo("Недостаточно данных для создания учетной записи"));
+    }
+    @DisplayName("Создание курьера без обязательного поля(password)")
+    @Description("Post-запрос /api/v1/courier")
+    @Test
+    public void courierCreateWithoutPassTest(){
+        CreateCourier createCourier = new CreateCourier("lalalalaal",  "", "dana");
+        BasicPostApi(createCourier,CREATE_COURIER).then().assertThat().statusCode(SC_BAD_REQUEST)
+                .body("message", equalTo("Недостаточно данных для создания учетной записи"));
+    }
+    @DisplayName("Создание курьера с логином который уже используется")
+    @Description("Post-запрос /api/v1/courier")
+    @Test
+    public void createSecondCourierLoginTest(){
+        CreateCourier createCourier = new CreateCourier("lalalalaal",  "54321", "dana");
+        BasicPostApi(createCourier,CREATE_COURIER).then().assertThat().statusCode(SC_CONFLICT)
+                .body("message", equalTo("Этот логин уже используется. Попробуйте другой."));
     }
 }
+
