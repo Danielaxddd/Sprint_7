@@ -1,6 +1,7 @@
 package orders;
 
 import basic.BasicUrl;
+import io.qameta.allure.Step;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -51,6 +52,11 @@ import static org.hamcrest.CoreMatchers.notNullValue;
         public void aCreateOrderWithColorTest() {
             String track = BasicPostApi(setFormData(), CREATE_ORDER).then().assertThat().statusCode(201)
                     .body("track", notNullValue()).and().extract().path("track").toString();
+            deleteOrderTest(track);
+        }
+
+        @Step("Удаление заказа")
+        public void deleteOrderTest(String track) {
             BasicPutApi(track).then().assertThat().statusCode(SC_OK);
         }
     }

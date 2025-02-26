@@ -2,6 +2,7 @@ package courier;
 
 import basic.BasicUrl;
 import constant.CourierCanLogOn;
+import io.qameta.allure.Step;
 import org.junit.Test;
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
@@ -21,10 +22,17 @@ import static org.hamcrest.CoreMatchers.notNullValue;
             CourierCanLogOn courierCanLogOn = new CourierCanLogOn("lalalalaal", "1234");
             BasicPostApi(courierCanLogOn,LOGIN_COURIER).then().assertThat().statusCode(200)
                     .body("id", notNullValue());
-            idCourier = BasicPostApi(courierCanLogOn,LOGIN_COURIER).asString().replace("\"id\":","").replaceAll("[{}]","");
+            deleteCourierTest(courierCanLogOn);
+
+        }
+
+        @Step("Удаление курьера")
+        public void deleteCourierTest(Object a){
+            idCourier = BasicPostApi(a,LOGIN_COURIER).asString().replace("\"id\":","").replaceAll("[{}]","");
             BasicDeleteApi(idCourier).then().assertThat().statusCode(SC_OK);
 
         }
+
         @DisplayName("Курьер успешно авторизуется без имени")
         @Description("Post-запрос /api/v1/courier/login")
         @Test
@@ -32,8 +40,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
             CourierCanLogOn courierCanLogOnNotFirstName = new CourierCanLogOn("lalalalaall", "1234");
             BasicPostApi(courierCanLogOnNotFirstName,LOGIN_COURIER).then().assertThat().statusCode(200)
                     .body("id", notNullValue());
-            idCourier = BasicPostApi(courierCanLogOnNotFirstName,LOGIN_COURIER).asString().replace("\"id\":","").replaceAll("[{}]","");
-            BasicDeleteApi(idCourier).then().assertThat().statusCode(SC_OK);
+            deleteCourierTest(courierCanLogOnNotFirstName);
         }
 
         @DisplayName("Система вернет ошибку при авторизации с неправильным логином")
